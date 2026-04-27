@@ -1,0 +1,16 @@
+from ..http.async_http import AsyncHTTPClient
+
+
+class LocationService:
+    def __init__(self, http_client: AsyncHTTPClient):
+        self._http = http_client
+
+    async def get_location_suggest_cities(self): ...
+
+    async def get_location_regions(self): ...
+
+    async def get_location_postalcodes(self): ...
+
+    async def get_location_coordinates(self): ...
+
+    async def get_location_cities(self): ...

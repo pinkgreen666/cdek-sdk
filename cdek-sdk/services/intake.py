@@ -1,0 +1,16 @@
+from ..http.async_http import AsyncHTTPClient
+
+
+class IntakeService:
+    def __init__(self, http_client: AsyncHTTPClient):
+        self._http = http_client
+
+    async def post_intakes_availableDays(self): ...
+
+    async def post_intakes(self): ...
+
+    async def patch_intakes(self): ...
+
+    async def get_intakes_uuid(self): ...
+
+    async def delete_intakes_uuid(self): ...
