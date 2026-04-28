@@ -107,3 +107,4 @@ class OfficeService:
         }
 
         result = await self._http.request("GET", "/v2/deliverypoints", params=params)
+        return result

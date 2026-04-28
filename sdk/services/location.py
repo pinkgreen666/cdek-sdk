@@ -22,7 +22,7 @@ class LocationService:
         result = await self._http.request(
             "GET", "/v2/location/suggest/cities", params=params
         )
-        print(result)
+        return result
 
     async def get_location_regions(
         self,
@@ -49,7 +49,7 @@ class LocationService:
         }
 
         result = await self._http.request("GET", "/v2/location/regions", params=params)
-        print(result)
+        return result
 
     async def get_location_postalcodes(self, city_code: int):
         """
@@ -63,6 +63,7 @@ class LocationService:
         result = await self._http.request(
             "GET", "/v2/location/postalcodes", params=params
         )
+        return result
 
     async def get_location_coordinates(self, latitude: float, longitude: float):
         """
@@ -77,6 +78,7 @@ class LocationService:
         result = await self._http.request(
             "GET", "/v2/location/cooridnates", params=params
         )
+        return result
 
     async def get_location_cities(
         self,
@@ -127,3 +129,4 @@ class LocationService:
         }
 
         result = await self._http.request("GET", "/v2/location/cities", params=params)
+        return result

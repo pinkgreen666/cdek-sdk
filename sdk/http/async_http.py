@@ -33,9 +33,12 @@ class AsyncHTTPClient:
             return self._access_token
 
         except httpx.HTTPStatusError as e:
-            ...
+            detail = _response_detail(e.response)
+            raise RuntimeError(
+                f"CDEK auth failed with status {e.response.status_code}: {detail}"
+            ) from e
         except Exception as e:
-            ...
+            raise RuntimeError(f"CDEK auth failed: {e}") from e
 
     async def _ensure_token(self) -> str | None:
         if not self._access_token:
@@ -69,9 +72,12 @@ class AsyncHTTPClient:
             return response.json()
 
         except httpx.HTTPStatusError as e:
-            ...
+            detail = _response_detail(e.response)
+            raise RuntimeError(
+                f"CDEK request failed with status {e.response.status_code}: {detail}"
+            ) from e
         except httpx.TimeoutException as e:
-            ...
+            raise TimeoutError(f"CDEK request timed out: {e}") from e
 
     async def close(self):
         await self._client.aclose()
@@ -81,3 +87,10 @@ class AsyncHTTPClient:
 
     async def __aexit__(self, *args):
         await self.close()
+
+
+def _response_detail(response: httpx.Response) -> Any:
+    try:
+        return response.json()
+    except ValueError:
+        return response.text

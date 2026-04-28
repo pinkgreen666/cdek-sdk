@@ -1,14 +1,28 @@
-import asyncio
-from sdk.client import CdekClient
+import os
+import sys
 
-client = CdekClient(
-    "REMOVED", "REMOVED", True
-)
+import pytest
 
 
-async def test():
-    await client.location.get_location_suggest_cities("Москва", None)
+CDEK_CLIENT_ID = "REMOVED"
+CDEK_CLIENT_SECRET = "REMOVED"
+CDEK_TEST_MODE = "True"
+
+
+def main() -> int:
+    os.environ["CDEK_CLIENT_ID"] = CDEK_CLIENT_ID
+    os.environ["CDEK_CLIENT_SECRET"] = CDEK_CLIENT_SECRET
+    os.environ["CDEK_TEST_MODE"] = CDEK_TEST_MODE
+
+    return pytest.main(
+        [
+            "-s",
+            "tests/test_location.py",
+            "tests/test_office.py",
+            "tests/test_calculator.py",
+        ]
+    )
 
 
 if __name__ == "__main__":
-    asyncio.run(test())
+    raise SystemExit(main())
