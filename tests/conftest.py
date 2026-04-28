@@ -4,7 +4,7 @@ import os
 import pytest
 import pytest_asyncio
 
-from sdk.client import CdekClient
+from cdek.client import CdekClient
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
@@ -18,9 +18,7 @@ def _require_env(name: str) -> str:
     value = os.getenv(name)
     if value:
         return value
-    pytest.skip(
-        f"Set the {name} environment variable to run live CDEK API tests."
-    )
+    pytest.skip(f"Set the {name} environment variable to run live CDEK API tests.")
 
 
 def _print_cdek_response(label: str, payload) -> None:

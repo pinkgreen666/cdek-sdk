@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cdek_api_sdk"
+version = "0.1.0"
+description = "Async Python SDK for CDEK API v2"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "httpx==0.28.1",
+  "pydantic==1.10.18",
+]
+
+[tool.setuptools]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cdek*"]
+

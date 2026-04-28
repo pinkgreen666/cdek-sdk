@@ -1,5 +1,5 @@
 from typing import Literal
-from sdk.models.calculator import (
+from ..models.calculator import (
     CalcAdditionalServiceDto,
     CalcPackageRequestDto,
     CalculatorLocationDto,
@@ -61,7 +61,9 @@ class CalculatorService:
             "packages": [package.dict(exclude_none=True) for package in packages],
         }
 
-        result = await self._http.request("POST", "/v2/calculator/tarifflist", json=request_data)
+        result = await self._http.request(
+            "POST", "/v2/calculator/tarifflist", json=request_data
+        )
         return result
 
     async def post_calculator_tariff(
@@ -123,7 +125,9 @@ class CalculatorService:
             "additional_order_types": additional_order_types,
         }
 
-        result = await self._http.request("POST", "/v2/calculator/tariff", json=request_data)
+        result = await self._http.request(
+            "POST", "/v2/calculator/tariff", json=request_data
+        )
 
         return result
 

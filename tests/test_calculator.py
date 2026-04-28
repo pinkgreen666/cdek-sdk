@@ -1,6 +1,6 @@
 import pytest
 
-from sdk.models.calculator import (
+from cdek.models.calculator import (
     CalcAdditionalServiceDto,
     CalcPackageRequestDto,
     CalculatorLocationDto,
@@ -44,7 +44,9 @@ async def test_post_calculator_tariff(live_client, cdek_response_printer):
         lang="rus",
     )
     tariff_codes = (tarifflist or {}).get("tariff_codes") or []
-    assert tariff_codes, "Expected at least one tariff in calculator/tarifflist response"
+    assert tariff_codes, (
+        "Expected at least one tariff in calculator/tarifflist response"
+    )
     tariff_code = tariff_codes[0]["tariff_code"]
 
     result = await live_client.calculator.post_calculator_tariff(

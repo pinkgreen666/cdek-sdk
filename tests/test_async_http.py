@@ -1,7 +1,7 @@
 import pytest
 import httpx
 from unittest.mock import AsyncMock, MagicMock, patch
-from sdk.http.async_http import AsyncHTTPClient
+from cdek.http.async_http import AsyncHTTPClient
 
 
 @pytest.mark.asyncio

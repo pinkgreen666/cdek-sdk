@@ -1,4 +1,4 @@
-from sdk.client import CdekClient
+from cdek.client import CdekClient
 import asyncio
 
 
