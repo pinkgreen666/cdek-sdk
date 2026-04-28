@@ -50,3 +50,22 @@ class CalcPackageRequestDto(BaseModel):
     height: int | None = Field(
         None, description="Габариты упаковки. Высота (в сантиметрах)"
     )
+
+
+class CalcAdditionalServiceDto(BaseModel):
+    code: str | None = Field(
+        None, max_length=255, description="Тип дополнительной услуги"
+    )
+    parameter: str | None = Field(
+        None,
+        max_length=255,
+        description="Параметр дополнительной услуги \
+        1. Количество для услуг PACKAGE_1, PACKAGE_A_2_LIGHT_EXPRESS, PACKAGE_A_3_LIGHT_EXPRESS, \
+        PACKAGE_A_4_LIGHT_EXPRESS, PACKAGE_A_5_LIGHT_EXPRESS, CARTON_BOX_XS, CARTON_BOX_S, CARTON_BOX_M, \
+        CARTON_BOX_2KG, CARTON_BOX_3KG, CARTON_BOX_5KG, CARTON_BOX_10KG, CARTON_BOX_XL_18_KILOS, \
+        CARTON_BOX_20KG, CARTON_BOX_30KG, CARTON_FILLER, XL_BOX_INNER_CRATE, 20_KG_BOX_INNER_CRATE, \
+        30_KG_BOX_INNER_CRATE (для всех типов заказа) \
+        2. Объявленная стоимость заказа для услуги INSURANCE (для всех типов заказа) \
+        3. Длина для услуг BUBBLE_WRAP, WASTE_PAPER (для всех типов заказа) \
+        4. Номер телефона для услуги SMS",
+    )
