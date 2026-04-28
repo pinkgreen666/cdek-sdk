@@ -61,9 +61,7 @@ class CalculatorService:
             "packages": [package.dict(exclude_none=True) for package in packages],
         }
 
-        result = await self._http.request(
-            "POST", "/v2/calculator/tarifflist", False, json=request_data
-        )
+        result = await self._http.request("POST", "/v2/calculator/tarifflist", json=request_data)
         return result
 
     async def post_calculator_tariff(
@@ -118,16 +116,14 @@ class CalculatorService:
             "currency": currency,
             "lang": lang,
             "tariff_code": tariff_code,
-            "from_location": from_location,
-            "to_location": to_location,
-            "services": services,
-            "packages": packages,
+            "from_location": from_location.dict(exclude_none=True),
+            "to_location": to_location.dict(exclude_none=True),
+            "services": [service.dict(exclude_none=True) for service in services],
+            "packages": [package.dict(exclude_none=True) for package in packages],
             "additional_order_types": additional_order_types,
         }
 
-        result = await self._http.request(
-            "POST", "/v2/calculator/tariff", False, json=request_data
-        )
+        result = await self._http.request("POST", "/v2/calculator/tariff", json=request_data)
 
         return result
 
@@ -178,15 +174,19 @@ class CalculatorService:
             "type": type,
             "currency": currency,
             "lang": lang,
-            "from_location": from_location,
-            "to_location": to_location,
-            "services": services,
-            "packages": packages,
-            "addirional_order_types": additional_order_types,
+            "from_location": from_location.dict(exclude_none=True),
+            "to_location": to_location.dict(exclude_none=True),
+            "services": (
+                [service.dict(exclude_none=True) for service in services]
+                if services is not None
+                else None
+            ),
+            "packages": [package.dict(exclude_none=True) for package in packages],
+            "additional_order_types": additional_order_types,
         }
 
-        result = self._http.request(
-            "POST", "/v2/calculator/tariffAnfService", False, json=request_data
+        result = await self._http.request(
+            "POST", "/v2/calculator/tariffAndService", json=request_data
         )
 
         return result
@@ -195,6 +195,6 @@ class CalculatorService:
         """
         Метод позволяет получить список всех доступных и актуальных тарифов по договору.
         """
-        result = self._http.request("GET", "/v2/calculator/alltariffs", False)
+        result = await self._http.request("GET", "/v2/calculator/alltariffs")
 
         return result
