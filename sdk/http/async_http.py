@@ -49,6 +49,14 @@ class AsyncHTTPClient:
     async def request(
         self, method: str, path: str, retry_auth: bool = True, **kwargs
     ) -> Any:
+        params = kwargs.get("params")
+        if isinstance(params, dict):
+            kwargs["params"] = {
+                key: value
+                for key, value in params.items()
+                if value is not None and value != ""
+            }
+
         token = await self._ensure_token()
 
         headers = kwargs.pop("headers", {})

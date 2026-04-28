@@ -58,7 +58,7 @@ class LocationService:
         Args:
             city_code (int): Код города, которому принадлежат почтовые индексы
         """
-        params = {"city_code": city_code}
+        params = {"code": city_code}
 
         result = await self._http.request(
             "GET", "/v2/location/postalcodes", params=params
@@ -76,7 +76,7 @@ class LocationService:
         params = {"latitude": latitude, "longitude": longitude}
 
         result = await self._http.request(
-            "GET", "/v2/location/cooridnates", params=params
+            "GET", "/v2/location/coordinates", params=params
         )
         return result
 

@@ -28,7 +28,9 @@ async def test_get_location_postalcodes(live_client, cdek_response_printer):
     result = await live_client.location.get_location_postalcodes(city_code=44)
     cdek_response_printer("location/postalcodes", result)
 
-    assert isinstance(result, list)
+    assert isinstance(result, dict)
+    assert result.get("code") == 44
+    assert isinstance(result.get("postal_codes"), list)
 
 
 @pytest.mark.asyncio
@@ -36,7 +38,7 @@ async def test_get_location_coordinates(live_client, cdek_response_printer):
     result = await live_client.location.get_location_coordinates(
         latitude=55.7558, longitude=37.6173
     )
-    cdek_response_printer("location/cooridnates", result)
+    cdek_response_printer("location/coordinates", result)
 
     assert result is None or isinstance(result, (dict, list))
 
