@@ -1,12 +1,15 @@
 import os
 import sys
 
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
+
 import pytest
 
 
-CDEK_CLIENT_ID = "REMOVED"
-CDEK_CLIENT_SECRET = "REMOVED"
-CDEK_TEST_MODE = "True"
+CDEK_CLIENT_ID = os.getenv("CDEK_CLIENT_ID")
+CDEK_CLIENT_SECRET = os.getenv("CDEK_CLIENT_SECRET")
+CDEK_TEST_MODE = os.getenv("CDEK_TEST_MODE")
 
 
 def main() -> int:
