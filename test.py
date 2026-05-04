@@ -2,6 +2,7 @@ import os
 import sys
 
 from dotenv import load_dotenv, find_dotenv
+
 load_dotenv(find_dotenv())
 
 import pytest
@@ -23,6 +24,7 @@ def main() -> int:
             "tests/test_location.py",
             "tests/test_office.py",
             "tests/test_calculator.py",
+            "tests/test_error_handling.py",
         ]
     )
 

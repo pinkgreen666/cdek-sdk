@@ -1,4 +1,11 @@
 from ..http.async_http import AsyncHTTPClient
+from ..models.location import (
+    SuggestCitiesResponseSchema,
+    RegionsResponseSchema,
+    PostalCodesResponseSchema,
+    CoordinatesResponseSchema,
+    CitiesResponseSchema,
+)
 
 
 class LocationService:
@@ -7,7 +14,7 @@ class LocationService:
 
     async def get_location_suggest_cities(
         self, name: str, country_code: str | None = None
-    ):
+    ) -> list[SuggestCitiesResponseSchema]:
         """
         Метод позволяет получать подсказки по подбору населенного пункта по его наименованию.
         Список населенных пунктов может быть ограничен характеристиками, задаваемыми пользователем.
@@ -22,7 +29,7 @@ class LocationService:
         result = await self._http.request(
             "GET", "/v2/location/suggest/cities", params=params
         )
-        return result
+        return [SuggestCitiesResponseSchema(**item) for item in result]
 
     async def get_location_regions(
         self,
@@ -30,7 +37,7 @@ class LocationService:
         size: int | None = None,
         page: int | None = None,
         lang: str | None = None,
-    ):
+    ) -> list[RegionsResponseSchema]:
         """
         Метод предназначен для получения детальной информации о регионах.
         Список регионов может быть ограничен характеристиками, задаваемыми пользователем.
@@ -49,9 +56,11 @@ class LocationService:
         }
 
         result = await self._http.request("GET", "/v2/location/regions", params=params)
-        return result
+        return [RegionsResponseSchema(**item) for item in result]
 
-    async def get_location_postalcodes(self, city_code: int):
+    async def get_location_postalcodes(
+        self, city_code: int
+    ) -> PostalCodesResponseSchema:
         """
         Метод предназначен для получения списка почтовых индексов.
 
@@ -63,9 +72,14 @@ class LocationService:
         result = await self._http.request(
             "GET", "/v2/location/postalcodes", params=params
         )
-        return result
+        return PostalCodesResponseSchema(
+            code=result.get("code"),
+            postal_codes=result.get("postal_codes"),
+        )
 
-    async def get_location_coordinates(self, latitude: float, longitude: float):
+    async def get_location_coordinates(
+        self, latitude: float, longitude: float
+    ) -> CoordinatesResponseSchema:
         """
         Метод позволяет определить локацию по переданным в запросе координатам
 
@@ -78,7 +92,12 @@ class LocationService:
         result = await self._http.request(
             "GET", "/v2/location/coordinates", params=params
         )
-        return result
+        return CoordinatesResponseSchema(
+            code=result.get("code"),
+            city_uuid=result.get("city_uuid"),
+            city=result.get("city"),
+            fias_guid=result.get("fias_guid", None),
+        )
 
     async def get_location_cities(
         self,
@@ -94,7 +113,7 @@ class LocationService:
         size: int | None = None,
         page: int | None = None,
         lang: str | None = None,
-    ):
+    ) -> list[CitiesResponseSchema]:
         """
         Метод предназначен для получения детальной информации о населенных пунктах.
         Список населенных пунктов может быть ограничен характеристиками, задаваемыми пользователем.
@@ -129,4 +148,4 @@ class LocationService:
         }
 
         result = await self._http.request("GET", "/v2/location/cities", params=params)
-        return result
+        return [CitiesResponseSchema(**item) for item in result]

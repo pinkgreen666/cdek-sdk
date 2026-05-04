@@ -1,6 +1,16 @@
 from typing import Any
 import httpx
 
+from ..exceptions import (
+    CdekAuthError,
+    CdekValidationError,
+    CdekNotFoundError,
+    CdekServerError,
+    CdekRateLimitError,
+    CdekTimeoutError,
+    CdekNetworkError,
+)
+
 
 class AsyncHTTPClient:
     def __init__(
@@ -34,11 +44,17 @@ class AsyncHTTPClient:
 
         except httpx.HTTPStatusError as e:
             detail = _response_detail(e.response)
-            raise RuntimeError(
-                f"CDEK auth failed with status {e.response.status_code}: {detail}"
+            raise CdekAuthError(
+                f"Authentication failed with status {e.response.status_code}: {detail}",
+                status_code=e.response.status_code,
+                response_data=detail,
             ) from e
+        except httpx.TimeoutException as e:
+            raise CdekTimeoutError(f"Authentication request timed out: {e}") from e
+        except httpx.RequestError as e:
+            raise CdekNetworkError(f"Network error during authentication: {e}") from e
         except Exception as e:
-            raise RuntimeError(f"CDEK auth failed: {e}") from e
+            raise CdekAuthError(f"Unexpected authentication error: {e}") from e
 
     async def _ensure_token(self) -> str | None:
         if not self._access_token:
@@ -81,11 +97,48 @@ class AsyncHTTPClient:
 
         except httpx.HTTPStatusError as e:
             detail = _response_detail(e.response)
-            raise RuntimeError(
-                f"CDEK request failed with status {e.response.status_code}: {detail}"
-            ) from e
+            status_code = e.response.status_code
+
+            if status_code == 400:
+                raise CdekValidationError(
+                    f"Validation error: {detail}",
+                    status_code=status_code,
+                    response_data=detail,
+                ) from e
+            elif status_code == 401:
+                raise CdekAuthError(
+                    f"Authentication failed: {detail}",
+                    status_code=status_code,
+                    response_data=detail,
+                ) from e
+            elif status_code == 404:
+                raise CdekNotFoundError(
+                    f"Resource not found: {detail}",
+                    status_code=status_code,
+                    response_data=detail,
+                ) from e
+            elif status_code == 429:
+                raise CdekRateLimitError(
+                    f"Rate limit exceeded: {detail}",
+                    status_code=status_code,
+                    response_data=detail,
+                ) from e
+            elif status_code >= 500:
+                raise CdekServerError(
+                    f"Server error ({status_code}): {detail}",
+                    status_code=status_code,
+                    response_data=detail,
+                ) from e
+            else:
+                raise CdekServerError(
+                    f"Request failed with status {status_code}: {detail}",
+                    status_code=status_code,
+                    response_data=detail,
+                ) from e
         except httpx.TimeoutException as e:
-            raise TimeoutError(f"CDEK request timed out: {e}") from e
+            raise CdekTimeoutError(f"Request timed out: {e}") from e
+        except httpx.RequestError as e:
+            raise CdekNetworkError(f"Network error: {e}") from e
 
     async def close(self):
         await self._client.aclose()
