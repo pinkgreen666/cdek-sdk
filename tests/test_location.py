@@ -1,5 +1,13 @@
 import pytest
 
+from cdek.models.location import (
+    SuggestCitiesResponseSchema,
+    RegionsResponseSchema,
+    PostalCodesResponseSchema,
+    CoordinatesResponseSchema,
+    CitiesResponseSchema,
+)
+
 
 @pytest.mark.asyncio
 async def test_get_location_suggest_cities(live_client, cdek_response_printer):
@@ -9,7 +17,8 @@ async def test_get_location_suggest_cities(live_client, cdek_response_printer):
     cdek_response_printer("location/suggest/cities", result)
 
     assert isinstance(result, list)
-    assert result
+    assert len(result) > 0
+    assert all(isinstance(item, SuggestCitiesResponseSchema) for item in result)
 
 
 @pytest.mark.asyncio
@@ -20,7 +29,8 @@ async def test_get_location_regions(live_client, cdek_response_printer):
     cdek_response_printer("location/regions", result)
 
     assert isinstance(result, list)
-    assert result
+    assert len(result) > 0
+    assert all(isinstance(item, RegionsResponseSchema) for item in result)
 
 
 @pytest.mark.asyncio
@@ -28,9 +38,9 @@ async def test_get_location_postalcodes(live_client, cdek_response_printer):
     result = await live_client.location.get_location_postalcodes(city_code=44)
     cdek_response_printer("location/postalcodes", result)
 
-    assert isinstance(result, dict)
-    assert result.get("code") == 44
-    assert isinstance(result.get("postal_codes"), list)
+    assert isinstance(result, PostalCodesResponseSchema)
+    assert result.code == 44
+    assert isinstance(result.postal_codes, list)
 
 
 @pytest.mark.asyncio
@@ -40,7 +50,8 @@ async def test_get_location_coordinates(live_client, cdek_response_printer):
     )
     cdek_response_printer("location/coordinates", result)
 
-    assert result is None or isinstance(result, (dict, list))
+    assert isinstance(result, CoordinatesResponseSchema)
+    assert result.code is not None
 
 
 @pytest.mark.asyncio
@@ -51,4 +62,5 @@ async def test_get_location_cities(live_client, cdek_response_printer):
     cdek_response_printer("location/cities", result)
 
     assert isinstance(result, list)
-    assert result
+    assert len(result) > 0
+    assert all(isinstance(item, CitiesResponseSchema) for item in result)

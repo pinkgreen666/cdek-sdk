@@ -1,5 +1,7 @@
 import pytest
 
+from cdek.models.office import DeliveryPointsResponse, DeliveryPoint
+
 
 @pytest.mark.asyncio
 async def test_get_deliverypoints(live_client, cdek_response_printer):
@@ -11,5 +13,6 @@ async def test_get_deliverypoints(live_client, cdek_response_printer):
     )
     cdek_response_printer("deliverypoints", result)
 
-    assert isinstance(result, list)
-    assert result
+    assert isinstance(result, DeliveryPointsResponse)
+    assert len(result) > 0
+    assert all(isinstance(item, DeliveryPoint) for item in result)

@@ -4,6 +4,9 @@ from cdek.models.calculator import (
     CalcAdditionalServiceDto,
     CalcPackageRequestDto,
     CalculatorLocationDto,
+    TariffListResponse,
+    TariffResponse,
+    AllTariffsResponse,
 )
 
 
@@ -25,8 +28,8 @@ async def test_post_calculator_tarifflist(live_client, cdek_response_printer):
     )
     cdek_response_printer("calculator/tarifflist", result)
 
-    assert isinstance(result, dict)
-    assert "tariff_codes" in result or "errors" in result
+    assert isinstance(result, TariffListResponse)
+    assert len(result.tariff_codes) > 0
 
 
 @pytest.mark.asyncio
@@ -43,11 +46,10 @@ async def test_post_calculator_tariff(live_client, cdek_response_printer):
         currency=1,
         lang="rus",
     )
-    tariff_codes = (tarifflist or {}).get("tariff_codes") or []
-    assert tariff_codes, (
+    assert len(tarifflist.tariff_codes) > 0, (
         "Expected at least one tariff in calculator/tarifflist response"
     )
-    tariff_code = tariff_codes[0]["tariff_code"]
+    tariff_code = tarifflist.tariff_codes[0].tariff_code
 
     result = await live_client.calculator.post_calculator_tariff(
         tariff_code=tariff_code,
@@ -62,8 +64,8 @@ async def test_post_calculator_tariff(live_client, cdek_response_printer):
     )
     cdek_response_printer("calculator/tariff", result)
 
-    assert isinstance(result, dict)
-    assert "errors" in result or "tariff_code" in result or "delivery_sum" in result
+    assert isinstance(result, TariffResponse)
+    assert result.delivery_sum is not None or result.errors is not None
 
 
 @pytest.mark.asyncio
@@ -84,8 +86,8 @@ async def test_post_calculator_tariffandservice(live_client, cdek_response_print
     )
     cdek_response_printer("calculator/tariffAndService", result)
 
-    assert isinstance(result, dict)
-    assert "tariff_codes" in result or "errors" in result
+    assert isinstance(result, TariffListResponse)
+    assert len(result.tariff_codes) > 0
 
 
 @pytest.mark.asyncio
@@ -93,6 +95,5 @@ async def test_get_calculator_alltariffs(live_client, cdek_response_printer):
     result = await live_client.calculator.get_calculator_alltariffs()
     cdek_response_printer("calculator/alltariffs", result)
 
-    assert isinstance(result, dict)
-    assert isinstance(result.get("tariff_codes"), list)
-    assert result["tariff_codes"]
+    assert isinstance(result, AllTariffsResponse)
+    assert len(result.tariff_codes) > 0

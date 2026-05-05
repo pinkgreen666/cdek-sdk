@@ -3,6 +3,9 @@ from ..models.calculator import (
     CalcAdditionalServiceDto,
     CalcPackageRequestDto,
     CalculatorLocationDto,
+    TariffListResponse,
+    TariffResponse,
+    AllTariffsResponse,
 )
 from ..http.async_http import AsyncHTTPClient
 
@@ -21,7 +24,7 @@ class CalculatorService:
         additional_order_types: list[int] | None = None,
         currency: int | None = None,
         lang: Literal["rus", "eng", "zho"] | None = None,
-    ):
+    ) -> TariffListResponse:
         """
         Метод используется клиентами для расчета стоимости и сроков доставки по всем доступным тарифам.
 
@@ -64,7 +67,7 @@ class CalculatorService:
         result = await self._http.request(
             "POST", "/v2/calculator/tarifflist", json=request_data
         )
-        return result
+        return TariffListResponse(**result)
 
     async def post_calculator_tariff(
         self,
@@ -78,7 +81,7 @@ class CalculatorService:
         type: Literal[1, 2] | None = None,
         currency: int | None = None,
         lang: Literal["rus", "eng", "zho"] | None = None,
-    ):
+    ) -> TariffResponse:
         """
         Метод используется для расчета стоимости и сроков доставки по конкретному коду тарифа
         по указанному направлению с учетом весо-габаритных характеристик груза.
@@ -129,7 +132,7 @@ class CalculatorService:
             "POST", "/v2/calculator/tariff", json=request_data
         )
 
-        return result
+        return TariffResponse(**result)
 
     async def post_calculator_tariffandservice(
         self,
@@ -142,7 +145,7 @@ class CalculatorService:
         lang: str | None = None,
         services: list[CalcAdditionalServiceDto] | None = None,
         additional_order_types: list[int] | None = None,
-    ):
+    ) -> TariffListResponse:
         """
         Метод используется клиентами для расчета стоимости и сроков доставки по доступным тарифам,
         с учётом переданных дополнительных услуг.
@@ -193,12 +196,12 @@ class CalculatorService:
             "POST", "/v2/calculator/tariffAndService", json=request_data
         )
 
-        return result
+        return TariffListResponse(**result)
 
-    async def get_calculator_alltariffs(self):
+    async def get_calculator_alltariffs(self) -> AllTariffsResponse:
         """
         Метод позволяет получить список всех доступных и актуальных тарифов по договору.
         """
         result = await self._http.request("GET", "/v2/calculator/alltariffs")
 
-        return result
+        return AllTariffsResponse(**result)

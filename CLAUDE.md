@@ -20,7 +20,12 @@ This is an async Python SDK for the CDEK API v2 (Russian logistics/delivery serv
 - `test_mode=True` → `https://api.edu.cdek.ru` (sandbox)
 - `test_mode=False` → `https://api.cdek.ru` (production)
 
-**Models**: Pydantic models (cdek/models/) define request/response schemas. Currently only calculator models exist, but this pattern should be extended for other services.
+**Models**: Pydantic models (cdek/models/) define request/response schemas for all services:
+- `calculator.py` - Request DTOs and response models for calculator service
+- `location.py` - Response models for location service
+- `office.py` - Response models for office/deliverypoints service
+
+All service methods return typed Pydantic models for better IDE support and validation.
 
 ## Development Commands
 
@@ -71,7 +76,9 @@ Tests are skipped if credentials are not provided. The `live_client` fixture in 
 1. Accept typed parameters (use Pydantic models for complex objects)
 2. Build params dict, filtering out None/empty values (handled by AsyncHTTPClient)
 3. Call `self._http.request(method, path, params=params)` or with `json=body`
-4. Return the raw response (dict or list)
+4. Parse response into Pydantic model and return it
+
+All service methods return typed Pydantic models (or lists of models) for type safety and IDE support.
 
 **Error handling**: The SDK provides custom exceptions for different error scenarios. All exceptions inherit from `CdekError` and include `message`, `status_code`, and `response_data` attributes. See the "Error Handling" section below for details.
 

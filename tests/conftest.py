@@ -3,8 +3,12 @@ import os
 
 import pytest
 import pytest_asyncio
+from dotenv import load_dotenv
 
 from cdek.client import CdekClient
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 def _env_flag(name: str, default: bool = False) -> bool:

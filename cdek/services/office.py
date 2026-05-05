@@ -1,4 +1,5 @@
 from ..http.async_http import AsyncHTTPClient
+from ..models.office import DeliveryPointsResponse
 
 
 class OfficeService:
@@ -34,7 +35,7 @@ class OfficeService:
         fias_guid: str | None = None,
         size: int | None = None,
         page: int | None = None,
-    ):
+    ) -> DeliveryPointsResponse:
         """
         Метод предназначен для получения списка действующих офисов СДЭК.
 
@@ -107,4 +108,4 @@ class OfficeService:
         }
 
         result = await self._http.request("GET", "/v2/deliverypoints", params=params)
-        return result
+        return DeliveryPointsResponse(__root__=result)
