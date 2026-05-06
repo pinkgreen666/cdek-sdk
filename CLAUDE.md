@@ -24,8 +24,14 @@ This is an async Python SDK for the CDEK API v2 (Russian logistics/delivery serv
 - `calculator.py` - Request DTOs and response models for calculator service
 - `location.py` - Response models for location service
 - `office.py` - Response models for office/deliverypoints service
+- `reference.py` - Models for reference data (additional services, tariffs, packaging)
 
 All service methods return typed Pydantic models for better IDE support and validation.
+
+**Reference Data**: The SDK includes static reference data from CDEK documentation that doesn't have API endpoints:
+- `cdek/reference/` - Reference data module with helper functions
+- `cdek/reference/data/additional_services.json` - All additional services (insurance, packaging, notifications, etc.)
+- Access via `from cdek.reference import get_service, list_services, suggest_box`
 
 ## Development Commands
 
@@ -164,6 +170,78 @@ finally:
 ```
 
 See `examples/error_handling.py` for comprehensive error handling patterns including retry logic and graceful degradation.
+
+## Reference Data
+
+The SDK includes static reference data from CDEK documentation for information that doesn't have API endpoints.
+
+**Module structure**:
+- `cdek/reference/models/` - Pydantic models (Service, OrderType, DeliveryMode)
+- `cdek/reference/services.py` - Additional services functions
+- `cdek/reference/types.py` - Order types functions
+- `cdek/reference/additional_types.py` - Additional order types functions
+- `cdek/reference/delivery_modes.py` - Delivery modes functions
+- `cdek/reference/data/` - JSON data files
+
+**Available reference data**:
+- Services (insurance, packaging, notifications, delivery options, etc.)
+- Order types (интернет-магазин, доставка)
+- Additional types (LTL, Forward, Fulfillment, etc.)
+- Delivery modes (дверь-дверь, склад-склад, постамат-постамат, etc.)
+
+**Usage examples**:
+```python
+from cdek.reference import (
+    get_service, list_services, suggest_box, get_packaging_services,
+    get_order_type, list_order_types,
+    get_additional_type, list_additional_types,
+    get_delivery_mode, list_delivery_modes
+)
+
+# Get service details
+service = get_service("INSURANCE")
+print(service.name, service.description)
+
+# List services with filters
+services = list_services(mode="warehouse-door", max_weight=10.0)
+
+# Get packaging recommendations
+box = suggest_box(weight=3.5, mode="warehouse-door")
+print(f"Recommended: {box.name}, max {box.max_weight}kg")
+
+# Get all packaging options
+packages = get_packaging_services()
+
+# Get order type
+order_type = get_order_type(1)
+print(order_type.name)  # интернет-магазин
+
+# Get additional type
+add_type = get_additional_type(2)
+print(add_type.name)  # для сборного груза (LTL)
+
+# Get delivery mode
+mode = get_delivery_mode(1)
+print(mode.name)  # дверь-дверь
+
+# List all delivery modes
+modes = list_delivery_modes()
+for m in modes:
+    print(f"{m.code}: {m.name}")
+```
+
+**Integration with FastAPI**:
+See `examples/fastapi_reference.py` for a complete FastAPI backend that uses reference data to build delivery configuration APIs. The example includes:
+- Service listing and filtering endpoints
+- Packaging suggestion endpoint
+- Delivery wizard that combines API calls with reference data
+- Frontend-ready response formats
+
+**Frontend integration**:
+See `examples/react_delivery_selector.tsx` for React components that consume the FastAPI endpoints to build:
+- Service selection UI with restrictions display
+- Packaging selector with recommendations
+- Complete delivery configuration wizard
 
 ## Dependencies
 

@@ -6,6 +6,7 @@ from ..models.calculator import (
     TariffListResponse,
     TariffResponse,
     AllTariffsResponse,
+    TariffAndServiceResponse,
 )
 from ..http.async_http import AsyncHTTPClient
 
@@ -76,7 +77,7 @@ class CalculatorService:
         to_location: CalculatorLocationDto,
         services: list[CalcAdditionalServiceDto],
         packages: list[CalcPackageRequestDto],
-        additional_order_types: list[int],
+        additional_order_types: list[int] | None = None,
         date: str | None = None,
         type: Literal[1, 2] | None = None,
         currency: int | None = None,
@@ -145,7 +146,7 @@ class CalculatorService:
         lang: str | None = None,
         services: list[CalcAdditionalServiceDto] | None = None,
         additional_order_types: list[int] | None = None,
-    ) -> TariffListResponse:
+    ) -> TariffAndServiceResponse:
         """
         Метод используется клиентами для расчета стоимости и сроков доставки по доступным тарифам,
         с учётом переданных дополнительных услуг.
@@ -196,7 +197,14 @@ class CalculatorService:
             "POST", "/v2/calculator/tariffAndService", json=request_data
         )
 
-        return TariffListResponse(**result)
+        # Логирование для отладки
+        import json
+        print("=" * 80)
+        print("RAW API RESPONSE from /v2/calculator/tariffAndService:")
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        print("=" * 80)
+
+        return TariffAndServiceResponse(**result)
 
     async def get_calculator_alltariffs(self) -> AllTariffsResponse:
         """

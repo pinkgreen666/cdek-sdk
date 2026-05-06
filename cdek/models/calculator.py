@@ -82,15 +82,65 @@ class TariffCode(BaseModel):
     tariff_description: str | None = Field(None, description="Описание тарифа")
     delivery_mode: int | None = Field(None, description="Режим доставки")
     delivery_sum: float | None = Field(None, description="Стоимость доставки")
-    period_min: int | None = Field(None, description="Минимальный срок доставки (в днях)")
-    period_max: int | None = Field(None, description="Максимальный срок доставки (в днях)")
+    period_min: int | None = Field(
+        None, description="Минимальный срок доставки (в днях)"
+    )
+    period_max: int | None = Field(
+        None, description="Максимальный срок доставки (в днях)"
+    )
     calendar_min: int | None = Field(None, description="Минимальный календарный срок")
     calendar_max: int | None = Field(None, description="Максимальный календарный срок")
-    delivery_date_range: DeliveryDateRange | None = Field(None, description="Диапазон дат доставки")
+    delivery_date_range: DeliveryDateRange | None = Field(
+        None, description="Диапазон дат доставки"
+    )
 
 
 class TariffListResponse(BaseModel):
     tariff_codes: list[TariffCode] = Field(description="Список доступных тарифов")
+
+
+class TariffServiceError(BaseModel):
+    code: str = Field(description="Код ошибки")
+    additional_code: str | None = Field(None, description="Дополнительный код ошибки")
+    message: str = Field(description="Сообщение об ошибке")
+
+
+class TariffServiceInfo(BaseModel):
+    code: str = Field(description="Код услуги")
+    sum: float | None = Field(None, description="Стоимость услуги")
+    total_sum: float | None = Field(None, description="Итоговая стоимость услуги")
+    discount_percent: float | None = Field(None, description="Процент скидки")
+    discount_sum: float | None = Field(None, description="Сумма скидки")
+    vat_rate: float | None = Field(None, description="Ставка НДС")
+    vat_sum: float | None = Field(None, description="Сумма НДС")
+
+
+class TariffServiceResult(BaseModel):
+    delivery_sum: float | None = Field(None, description="Стоимость доставки")
+    period_min: int | None = Field(None, description="Минимальный срок доставки")
+    period_max: int | None = Field(None, description="Максимальный срок доставки")
+    calendar_min: int | None = Field(None, description="Минимальный календарный срок")
+    calendar_max: int | None = Field(None, description="Максимальный календарный срок")
+    delivery_date_range: DeliveryDateRange | None = Field(
+        None, description="Диапазон дат доставки"
+    )
+    weight_calc: int | None = Field(None, description="Расчетный вес")
+    services: list[TariffServiceInfo] | None = Field(None, description="Список услуг")
+    total_sum: float | None = Field(None, description="Итоговая стоимость")
+    currency: str | None = Field(None, description="Валюта")
+    errors: list[TariffServiceError] | None = Field(None, description="Ошибки")
+
+
+class TariffAndServiceCode(BaseModel):
+    tariff_code: str = Field(description="Код тарифа (строка)")
+    status: str = Field(description="Статус расчета (true/false)")
+    result: TariffServiceResult = Field(description="Результат расчета или ошибки")
+
+
+class TariffAndServiceResponse(BaseModel):
+    tariff_codes: list[TariffAndServiceCode] = Field(
+        description="Список тарифов с услугами"
+    )
 
 
 class TariffResponse(BaseModel):
@@ -103,7 +153,9 @@ class TariffResponse(BaseModel):
     period_max: int | None = Field(None, description="Максимальный срок доставки")
     calendar_min: int | None = Field(None, description="Минимальный календарный срок")
     calendar_max: int | None = Field(None, description="Максимальный календарный срок")
-    delivery_date_range: DeliveryDateRange | None = Field(None, description="Диапазон дат доставки")
+    delivery_date_range: DeliveryDateRange | None = Field(
+        None, description="Диапазон дат доставки"
+    )
     errors: list[dict] | None = Field(None, description="Ошибки при расчете")
 
 
@@ -114,7 +166,9 @@ class DeliveryMode(BaseModel):
 
 
 class AdditionalOrderTypesParam(BaseModel):
-    without_additional_order_type: bool | None = Field(None, description="Без дополнительного типа заказа")
+    without_additional_order_type: bool | None = Field(
+        None, description="Без дополнительного типа заказа"
+    )
 
 
 class AllTariff(BaseModel):
@@ -129,11 +183,19 @@ class AllTariff(BaseModel):
     height_min: int = Field(description="Минимальная высота")
     height_max: int = Field(description="Максимальная высота")
     order_types: list[str] = Field(description="Типы заказов")
-    payer_contragent_type: list[str] = Field(description="Типы контрагентов плательщика")
-    sender_contragent_type: list[str] = Field(description="Типы контрагентов отправителя")
-    recipient_contragent_type: list[str] = Field(description="Типы контрагентов получателя")
+    payer_contragent_type: list[str] = Field(
+        description="Типы контрагентов плательщика"
+    )
+    sender_contragent_type: list[str] = Field(
+        description="Типы контрагентов отправителя"
+    )
+    recipient_contragent_type: list[str] = Field(
+        description="Типы контрагентов получателя"
+    )
     delivery_modes: list[DeliveryMode] = Field(description="Режимы доставки")
-    additional_order_types_param: AdditionalOrderTypesParam | None = Field(None, description="Параметры дополнительных типов заказов")
+    additional_order_types_param: AdditionalOrderTypesParam | None = Field(
+        None, description="Параметры дополнительных типов заказов"
+    )
 
 
 class AllTariffsResponse(BaseModel):
