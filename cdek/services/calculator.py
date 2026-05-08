@@ -197,13 +197,6 @@ class CalculatorService:
             "POST", "/v2/calculator/tariffAndService", json=request_data
         )
 
-        # Логирование для отладки
-        import json
-        print("=" * 80)
-        print("RAW API RESPONSE from /v2/calculator/tariffAndService:")
-        print(json.dumps(result, indent=2, ensure_ascii=False))
-        print("=" * 80)
-
         return TariffAndServiceResponse(**result)
 
     async def get_calculator_alltariffs(self) -> AllTariffsResponse:

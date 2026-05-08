@@ -7,6 +7,7 @@ from cdek.models.calculator import (
     TariffListResponse,
     TariffResponse,
     AllTariffsResponse,
+    TariffAndServiceResponse,
 )
 
 
@@ -86,7 +87,7 @@ async def test_post_calculator_tariffandservice(live_client, cdek_response_print
     )
     cdek_response_printer("calculator/tariffAndService", result)
 
-    assert isinstance(result, TariffListResponse)
+    assert isinstance(result, TariffAndServiceResponse)
     assert len(result.tariff_codes) > 0
 
 
