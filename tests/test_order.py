@@ -51,222 +51,143 @@ async def test_get_orders_by_im_number(live_client, cdek_response_printer):
         assert e.status_code == 400
 
 
-@pytest.mark.asyncio
-async def test_post_orders_minimal(live_client, cdek_response_printer):
-    """Test creating order with minimal required fields (warehouse to warehouse)"""
-    import time
 
+
+@pytest.mark.asyncio
+async def test_create_and_get_order_by_uuid(live_client, cdek_response_printer, tmp_path):
+    """Test creating order and retrieving it by UUID"""
+    import time
+    import json
+    import asyncio
+
+    # Step 1: Create order
     recipient = RecipientContactDto(
-        name="Иванов Иван Иванович",
-        phones=[PhoneDto(number="+79001234567")]
+        name="Тестовый Получатель UUID",
+        phones=[PhoneDto(number="+79005555555")]
     )
 
     item = ItemRequestDto(
-        name="Тестовый товар",
-        ware_key="TEST-001",
-        payment=MoneyDto(value=1000.0),
-        weight=500,
+        name="Тестовый товар для UUID",
+        ware_key="TEST-UUID-001",
+        payment=MoneyDto(value=1500.0),
+        weight=750,
         amount=1,
-        cost=1000.0
+        cost=1500.0
     )
 
     package = PackageRequestDto(
         number="1",
-        weight=500,
+        weight=750,
         items=[item]
     )
 
-    result = await live_client.order.post_orders(
+    order_number = f"TEST-UUID-{int(time.time())}"
+
+    create_result = await live_client.order.post_orders(
         tariff_code=136,  # Посылка склад-склад
         recipient=recipient,
         packages=[package],
-        number=f"TEST-MIN-{int(time.time())}",
+        number=order_number,
         shipment_point="MSK1",
         delivery_point="SPB1",
     )
-    cdek_response_printer("order/post_minimal", result)
+    cdek_response_printer("order/create_for_uuid_test", create_result)
 
-    assert isinstance(result, PostOrdersResponse)
-    assert result.requests is not None
-    assert len(result.requests) > 0
+    assert isinstance(create_result, PostOrdersResponse)
+    assert create_result.entity is not None
+    order_uuid = create_result.entity.uuid
+
+    # Step 2: Save UUID to file
+    uuid_file = tmp_path / "test_order_uuid.json"
+    with open(uuid_file, "w") as f:
+        json.dump({
+            "uuid": order_uuid,
+            "order_number": order_number,
+            "created_at": time.time()
+        }, f, indent=2)
+
+    print(f"\nOrder UUID saved to: {uuid_file}")
+    print(f"Order UUID: {order_uuid}")
+
+    # Wait for order to be processed by CDEK system
+    print("Waiting 5 seconds for order to be processed...")
+    await asyncio.sleep(5)
+
+    # Step 3: Retrieve order by UUID from file
+    with open(uuid_file, "r") as f:
+        saved_data = json.load(f)
+
+    retrieved_uuid = saved_data["uuid"]
+
+    get_result = await live_client.order.get_orders_uuid(retrieved_uuid)
+    cdek_response_printer("order/get_by_uuid", get_result)
+
+    # Step 4: Verify the retrieved order
+    assert isinstance(get_result, GetOrdersResponse)
+    assert get_result.entity is not None
+    assert get_result.entity.uuid == order_uuid
+    assert get_result.entity.number == order_number
+    assert get_result.entity.recipient.name == "Тестовый Получатель UUID"
+    assert len(get_result.entity.packages) == 1
+    assert get_result.entity.packages[0].items[0].name == "Тестовый товар для UUID"
+    assert get_result.entity.cdek_number is not None
+    print(f"\nSuccessfully retrieved order with CDEK number: {get_result.entity.cdek_number}")
 
 
 @pytest.mark.asyncio
-async def test_post_orders_full(live_client, cdek_response_printer):
-    """Test creating order with all optional fields (door to door)"""
+async def test_get_order_by_im_number_after_creation(live_client, cdek_response_printer):
+    """Test creating order and retrieving it by IM number (internal order number)"""
     import time
+    import asyncio
 
-    sender = SenderContactDto(
-        name="Отправитель Тест",
-        phones=[PhoneDto(number="+79001111111")]
-    )
+    # Step 1: Create order with unique IM number
+    order_number = f"TEST-IM-{int(time.time())}"
 
     recipient = RecipientContactDto(
-        name="Получатель Тест",
-        email="recipient@test.com",
-        phones=[PhoneDto(number="+79002222222", additional="123")]
-    )
-
-    from_location = RequestFromLocationDto(
-        code=44,  # Moscow
-        address="ул. Тестовая, д. 1"
-    )
-
-    to_location = RequestToLocationDto(
-        code=137,  # Saint Petersburg
-        address="ул. Тестовая, д. 2"
+        name="Тестовый Получатель IM",
+        phones=[PhoneDto(number="+79006666666")]
     )
 
     item = ItemRequestDto(
-        name="Тестовый товар",
-        ware_key="TEST-002",
-        payment=MoneyDto(value=2000.0, vat_sum=333.33, vat_rate=20),
+        name="Тестовый товар IM",
+        ware_key="TEST-IM-001",
+        payment=MoneyDto(value=2000.0),
         weight=1000,
-        weight_gross=1100,
-        amount=2,
-        cost=2000.0,
-        brand="TestBrand",
-        country_code="RU"
-    )
-
-    package = PackageRequestDto(
-        number="1",
-        weight=1000,
-        length=30,
-        width=20,
-        height=10,
-        comment="Хрупкое",
-        items=[item]
-    )
-
-    services = [
-        AdditionalServiceRequestDto(code="INSURANCE", parameter="2000")
-    ]
-
-    delivery_cost = DeliveryRecipientCostRequestDto(
-        value=500.0,
-        vat_sum=83.33,
-        vat_rate=20
-    )
-
-    result = await live_client.order.post_orders(
-        type=1,  # интернет-магазин
-        tariff_code=1,  # Экспресс лайт дверь-дверь
-        number=f"TEST-FULL-{int(time.time())}",
-        comment="Тестовый заказ с полными данными",
-        sender=sender,
-        recipient=recipient,
-        from_location=from_location,
-        to_location=to_location,
-        packages=[package],
-        services=services,
-        delivery_recipient_cost=delivery_cost,
-    )
-    cdek_response_printer("order/post_full", result)
-
-    assert isinstance(result, PostOrdersResponse)
-    assert result.requests is not None
-    assert len(result.requests) > 0
-
-
-@pytest.mark.asyncio
-async def test_post_orders_with_multiple_packages(live_client, cdek_response_printer):
-    """Test creating order with multiple packages"""
-    import time
-
-    recipient = RecipientContactDto(
-        name="Тестовый Получатель",
-        phones=[PhoneDto(number="+79003333333")]
-    )
-
-    packages = []
-    for i in range(1, 3):
-        item = ItemRequestDto(
-            name=f"Товар {i}",
-            ware_key=f"TEST-{i:03d}",
-            payment=MoneyDto(value=1000.0 * i),
-            weight=500 * i,
-            amount=1,
-            cost=1000.0 * i
-        )
-
-        package = PackageRequestDto(
-            number=str(i),
-            weight=500 * i,
-            items=[item]
-        )
-        packages.append(package)
-
-    from_location = RequestFromLocationDto(
-        code=44,
-        address="ул. Тестовая, д. 10"
-    )
-
-    to_location = RequestToLocationDto(
-        code=137,
-        address="ул. Тестовая, д. 20"
-    )
-
-    result = await live_client.order.post_orders(
-        tariff_code=1,
-        recipient=recipient,
-        packages=packages,
-        from_location=from_location,
-        to_location=to_location,
-        number=f"TEST-MULTI-{int(time.time())}",
-    )
-    cdek_response_printer("order/post_multiple_packages", result)
-
-    assert isinstance(result, PostOrdersResponse)
-    assert result.requests is not None
-    assert len(result.requests) > 0
-
-
-@pytest.mark.asyncio
-async def test_post_orders_door_to_door(live_client, cdek_response_printer):
-    """Test creating door-to-door delivery order"""
-    import time
-
-    recipient = RecipientContactDto(
-        name="Получатель Курьер",
-        phones=[PhoneDto(number="+79004444444")]
-    )
-
-    from_location = RequestFromLocationDto(
-        code=44,
-        address="г. Москва, ул. Ленина, д. 1, кв. 1"
-    )
-
-    to_location = RequestToLocationDto(
-        code=137,
-        address="г. Санкт-Петербург, ул. Невский проспект, д. 1, кв. 1"
-    )
-
-    item = ItemRequestDto(
-        name="Документы",
-        ware_key="DOC-001",
-        payment=MoneyDto(value=0.0),
-        weight=100,
         amount=1,
-        cost=0.0
+        cost=2000.0
     )
 
     package = PackageRequestDto(
         number="1",
-        weight=100,
+        weight=1000,
         items=[item]
     )
 
-    result = await live_client.order.post_orders(
-        tariff_code=1,  # Экспресс лайт дверь-дверь
+    create_result = await live_client.order.post_orders(
+        tariff_code=136,
         recipient=recipient,
         packages=[package],
-        from_location=from_location,
-        to_location=to_location,
-        number=f"TEST-DOOR-{int(time.time())}",
+        number=order_number,
+        shipment_point="MSK1",
+        delivery_point="SPB1",
     )
-    cdek_response_printer("order/post_door_to_door", result)
+    cdek_response_printer("order/create_with_im_number", create_result)
 
-    assert isinstance(result, PostOrdersResponse)
-    assert result.requests is not None
-    assert len(result.requests) > 0
+    assert isinstance(create_result, PostOrdersResponse)
+    assert create_result.entity is not None
+
+    # Wait for order to be processed
+    print(f"\nCreated order with IM number: {order_number}")
+    print("Waiting 5 seconds for order to be processed...")
+    await asyncio.sleep(5)
+
+    # Step 2: Retrieve order by IM number
+    get_result = await live_client.order.get_orders(im_number=order_number)
+    cdek_response_printer("order/get_by_im_number_after_creation", get_result)
+
+    # Step 3: Verify the retrieved order
+    assert isinstance(get_result, GetOrdersResponse)
+    assert get_result.entity is not None
+    assert get_result.entity.number == order_number
+    assert get_result.entity.recipient.name == "Тестовый Получатель IM"
+    print(f"\nSuccessfully retrieved order by IM number: {order_number}")

@@ -1,4 +1,5 @@
-from pydantic import BaseModel, NoneStr
+from pydantic import BaseModel
+from pydantic.typing import NONE_TYPES
 
 
 class AccompanyingWaybillDto(BaseModel):
@@ -129,9 +130,9 @@ class SellerItemDto(BaseModel):
 
 
 class ReturnItemDetail(BaseModel):
-    direct_order_number: str
-    direct_order_uuid: str
-    direct_package_number: str
+    direct_order_number: str | None = None
+    direct_order_uuid: str | None = None
+    direct_package_number: str | None = None
 
 
 class ItemResponseDto(BaseModel):
@@ -151,7 +152,7 @@ class ItemResponseDto(BaseModel):
     url: str | None = None
     seller: SellerItemDto | None = None
     return_item_detail: ReturnItemDetail | None = None
-    excise: str | None
+    excise: str | None = None
     cost: float
     feach_code: str | None = None
     jewel_uin: str | None = None
@@ -228,8 +229,8 @@ class RescheduledCallResponseDto(BaseModel):
 
 
 class CallsResponseDto(BaseModel):
-    field_calls: list[FailedCallResponseDto]
-    rescheduled_calls: list[RescheduledCallResponseDto]
+    field_calls: list[FailedCallResponseDto] | None = None
+    rescheduled_calls: list[RescheduledCallResponseDto] | None = None
 
 
 class OrderResponseDto(BaseModel):
@@ -241,7 +242,7 @@ class OrderResponseDto(BaseModel):
     cdek_number: str | None = None
     number: str | None = None
     accompanying_number: str | None = None
-    accompanying_waybill: AccompanyingWaybillDto | None
+    accompanying_waybill: AccompanyingWaybillDto | None = None
     tariff_code: int
     comment: str | None = None
     shipment_point: str | None = None
@@ -251,7 +252,7 @@ class OrderResponseDto(BaseModel):
     shipper_name: str | None = None
     shipper_address: str | None = None
     delivery_recipient_cost: DeliveryRecipientCostResponseDto
-    delivery_recipient_cost_adv: DeliveryCostThresholdDto
+    delivery_recipient_cost_adv: DeliveryCostThresholdDto | None = None
     sender: SenderResponseContactDto
     seller: SellerDto | None = None
     recipient: RecipientResponseContactDto
@@ -264,9 +265,9 @@ class OrderResponseDto(BaseModel):
     delivery_mode: str | None = None
     has_reverse_order: str | None = None
     delay_reasons: list[OrderDelayReason] | None = None
-    planned_delivery_date: str | None
+    planned_delivery_date: str | None = None
     delivery_detail: ResponseDeliveryDetailDto | None = None
-    delivery_problem: list[DeliveryProblemResponseDto]
+    delivery_problem: list[DeliveryProblemResponseDto] | None = None
     developer_key: str | None = None
     calls: CallsResponseDto | None = None
 
@@ -430,4 +431,132 @@ class RootEntityDto(BaseModel):
 class PostOrdersResponse(BaseModel):
     entity: RootEntityDto | None = None
     requests: list[RequestDto]
+    related_entities: list[RelatedEntityDto] | None = None
+
+
+class LocationDto(BaseModel):
+    code: int | None = None
+    city_uuid: str | None = None
+    city: str | None = None
+    fias_guid: str | None = None
+    country_code: str | None = None
+    country: str | None = None
+    region: str | None = None
+    region_code: int | None = None
+    sub_region: str | None = None
+    longitude: float | None = None
+    latitude: float | None = None
+    time_zone: str | None = None
+    payment_limit: float | None = None
+    address: str | None = None
+    postal_code: str | None = None
+
+
+class ErrorDto1(BaseModel):
+    code: str
+    additional_code: str | None = None
+    message: str
+
+
+class RequestDto1(BaseModel):
+    request_uuid: str | None = None
+    type: str
+    date_time: str
+    state: str
+    errors: list[ErrorDto1] | None
+    warnings: list[WarningDto]
+
+
+class PatchOrdersResponse(BaseModel):
+    entity: RootEntityDto | None = None
+    requests: list[RequestDto1]
+    related_entities: list[RelatedEntityDto] | None = None
+
+
+class DeleteOrdersResponse(BaseModel):
+    entity: RootEntityDto | None = None
+    requests: list[RequestDto1]
+    related_entities: list[RelatedEntityDto] | None = None
+
+
+class ContactDto(BaseModel):
+    company: str | None = None
+    name: str
+    contragent_type: str | None = None
+    passport_series: str | None = None
+    passport_number: str | None = None
+    passport_date_of_issue: str | None = None
+    passport_organization: str | None = None
+    tin: str | None = None
+    passport_date_of_birth: str | None = None
+    email: str | None = None
+    phones: list[PhoneDto] | None = None
+    passport_requrements_satisfied: str | None = None
+
+
+class LocationInfoDto(BaseModel):
+    code: int | None = None
+    city_uuid: str | None = None
+    city: str | None = None
+    fias_guid: str | None = None
+    country_code: str | None = None
+    country: str | None = None
+    region: str | None = None
+    region_code: int | None = None
+    sub_region: str | None = None
+    longitude: str | None = None
+    latitude: str | None = None
+    address: str | None = None
+    postal_code: str | None = None
+
+
+class IntakeStatusDto(BaseModel):
+    code: str
+    name: str
+    date_time: str
+
+
+class IntakePackageDto(BaseModel):
+    package_id: str | None = None
+    weight: int | None = None
+    length: int | None = None
+    width: int | None = None
+    height: int | None = None
+
+
+class GetOrdersIntakesResponse(BaseModel):
+    uuid: str
+    cdek_number: str | None = None
+    order_uuid: str | None = None
+    intake_date: str
+    intake_number: str | None = None
+    intake_time_from: str
+    intake_time_to: str
+    lunch_time_from: str | None = None
+    lunch_time_to: str | None = None
+    name: str | None = None
+    weight: int | None = None
+    length: int | None = None
+    width: int | None = None
+    height: int | None = None
+    comment: str | None = None
+    courier_power_of_attomey: str | None = None
+    courier_identity_card: str | None = None
+    sender: ContactDto | None = None
+    from_location: LocationInfoDto
+    to_location: LocationInfoDto | None = None
+    need_call: str | None = None
+    statuses: list[IntakeStatusDto]
+    packages: list[IntakePackageDto] | None = None
+
+
+class PostOrdersRefusalResponse(BaseModel):
+    entity: RootEntityDto | None = None
+    requests: list[RequestDto1]
+    realted_entities: list[RelatedEntityDto] | None = None
+
+
+class PostOrdersClientReturnResponse(BaseModel):
+    entity: RootEntityDto | None = None
+    requests: list[RequestDto1]
     related_entities: list[RelatedEntityDto] | None = None

@@ -167,3 +167,4 @@ medias/
 .python-version
 *.xlsx
 test_mail.py
+tests/tmp/
